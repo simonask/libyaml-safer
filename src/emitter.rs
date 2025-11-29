@@ -818,13 +818,13 @@ impl<'w> Emitter<'w> {
     }
 
     fn emit_scalar(&mut self, event: &Event, analysis: &mut Analysis) -> Result<()> {
-        let Analysis {
-            anchor,
-            tag,
-            scalar: Some(scalar),
-        } = analysis
-        else {
-            unreachable!("no scalar analysis");
+        let (anchor, tag, scalar) = match analysis {
+            Analysis {
+                anchor,
+                tag,
+                scalar: Some(scalar),
+            } => (anchor, tag, scalar),
+            _ => unreachable!("no scalar analysis"),
         };
 
         self.select_scalar_style(event, scalar, tag)?;
@@ -842,8 +842,9 @@ impl<'w> Emitter<'w> {
         self.process_anchor(anchor.as_ref())?;
         self.process_tag(tag.as_ref())?;
 
-        let EventData::SequenceStart { style, .. } = &event.data else {
-            unreachable!()
+        let style = match &event.data {
+            EventData::SequenceStart { style, .. } => style,
+            _ => unreachable!(),
         };
 
         if self.flow_level != 0
@@ -863,8 +864,9 @@ impl<'w> Emitter<'w> {
         self.process_anchor(anchor.as_ref())?;
         self.process_tag(tag.as_ref())?;
 
-        let EventData::MappingStart { style, .. } = &event.data else {
-            unreachable!()
+        let style = match &event.data {
+            EventData::MappingStart { style, .. } => style,
+            _ => unreachable!(),
         };
 
         if self.flow_level != 0
@@ -916,8 +918,9 @@ impl<'w> Emitter<'w> {
                 length = analysis.anchor.as_ref().map_or(0, |a| a.anchor.len());
             }
             EventData::Scalar { .. } => {
-                let Some(scalar) = scalar else {
-                    panic!("no analysis for scalar")
+                let scalar = match scalar {
+                    Some(scalar) => scalar,
+                    None => panic!("no analysis for scalar"),
                 };
 
                 if scalar.multiline {
@@ -951,14 +954,14 @@ impl<'w> Emitter<'w> {
         scalar_analysis: &mut ScalarAnalysis,
         tag_analysis: &mut Option<TagAnalysis>,
     ) -> Result<()> {
-        let EventData::Scalar {
-            plain_implicit,
-            quoted_implicit,
-            style,
-            ..
-        } = &event.data
-        else {
-            unreachable!()
+        let (plain_implicit, quoted_implicit, style) = match &event.data {
+            EventData::Scalar {
+                plain_implicit,
+                quoted_implicit,
+                style,
+                ..
+            } => (plain_implicit, quoted_implicit, style),
+            _ => unreachable!(),
         };
 
         let mut style: ScalarStyle = *style;
@@ -1010,16 +1013,18 @@ impl<'w> Emitter<'w> {
     }
 
     fn process_anchor(&mut self, analysis: Option<&AnchorAnalysis>) -> Result<()> {
-        let Some(analysis) = analysis.as_ref() else {
-            return Ok(());
+        let analysis = match analysis.as_ref() {
+            Some(analysis) => analysis,
+            None => return Ok(()),
         };
         self.write_indicator(if analysis.alias { "*" } else { "&" }, true, false, false)?;
         self.write_anchor(analysis.anchor)
     }
 
     fn process_tag(&mut self, analysis: Option<&TagAnalysis>) -> Result<()> {
-        let Some(analysis) = analysis else {
-            return Ok(());
+        let analysis = match analysis {
+            Some(analysis) => analysis,
+            None => return Ok(()),
         };
 
         if analysis.handle.is_empty() && analysis.suffix.is_empty() {
@@ -1614,8 +1619,9 @@ impl<'w> Emitter<'w> {
                         let value_0 = ch as u32;
                         while k >= 0 {
                             let digit = (value_0 >> k) & 0x0F;
-                            let Some(digit_char) = char::from_digit(digit, 16) else {
-                                unreachable!("digit out of range")
+                            let digit_char = match char::from_digit(digit, 16) {
+                                Some(digit_char) => digit_char,
+                                None => unreachable!("digit out of range"),
                             };
                             // The libyaml emitter encodes unicode sequences as uppercase hex.
                             let digit_char = digit_char.to_ascii_uppercase();
@@ -1658,8 +1664,9 @@ impl<'w> Emitter<'w> {
 
         let first = string.chars().next();
         if is_space(first) || is_break(first) {
-            let Some(indent_hint) = char::from_digit(self.best_indent as u32, 10) else {
-                unreachable!("self.best_indent out of range")
+            let indent_hint = match char::from_digit(self.best_indent as u32, 10) {
+                Some(indent_hint) => indent_hint,
+                None => unreachable!("self.best_indent out of range"),
             };
             let mut indent_hint_buffer = [0u8; 1];
             let indent_hint = indent_hint.encode_utf8(&mut indent_hint_buffer);

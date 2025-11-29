@@ -359,8 +359,9 @@ impl Document {
         index: i32,
         anchor: Option<String>,
     ) -> Result<()> {
-        let Some(anchor) = anchor else {
-            return Ok(());
+        let anchor = match anchor {
+            Some(anchor) => anchor,
+            None => return Ok(()),
         };
         let data = AliasData {
             anchor,
@@ -382,8 +383,9 @@ impl Document {
     }
 
     fn load_node_add(&mut self, ctx: &[i32], index: i32) -> Result<()> {
-        let Some(parent_index) = ctx.last() else {
-            return Ok(());
+        let parent_index = match ctx.last() {
+            Some(parent_index) => parent_index,
+            None => return Ok(()),
         };
         let parent_index = *parent_index;
         let parent = &mut self.nodes[parent_index as usize - 1];
@@ -410,8 +412,9 @@ impl Document {
     }
 
     fn load_alias(&mut self, parser: &ParserInner, event: Event, ctx: &[i32]) -> Result<()> {
-        let EventData::Alias { anchor } = &event.data else {
-            unreachable!()
+        let anchor = match &event.data {
+            EventData::Alias { anchor } => anchor,
+            _ => unreachable!(),
         };
 
         for alias_data in &parser.aliases {
@@ -429,15 +432,15 @@ impl Document {
     }
 
     fn load_scalar(&mut self, parser: &mut ParserInner, event: Event, ctx: &[i32]) -> Result<()> {
-        let EventData::Scalar {
-            mut tag,
-            value,
-            style,
-            anchor,
-            ..
-        } = event.data
-        else {
-            unreachable!()
+        let (mut tag, value, style, anchor) = match event.data {
+            EventData::Scalar {
+                tag,
+                value,
+                style,
+                anchor,
+                ..
+            } => (tag, value, style, anchor),
+            _ => unreachable!(),
         };
 
         if tag.is_none() || tag.as_deref() == Some("!") {
@@ -461,14 +464,14 @@ impl Document {
         event: Event,
         ctx: &mut Vec<i32>,
     ) -> Result<()> {
-        let EventData::SequenceStart {
-            anchor,
-            mut tag,
-            style,
-            ..
-        } = event.data
-        else {
-            unreachable!()
+        let (anchor, mut tag, style) = match event.data {
+            EventData::SequenceStart {
+                anchor,
+                tag,
+                style,
+                ..
+            } => (anchor, tag, style),
+            _ => unreachable!(),
         };
 
         let mut items = Vec::with_capacity(16);
@@ -496,8 +499,9 @@ impl Document {
     }
 
     fn load_sequence_end(&mut self, event: Event, ctx: &mut Vec<i32>) -> Result<()> {
-        let Some(index) = ctx.last().copied() else {
-            panic!("sequence_end without a current sequence")
+        let index = match ctx.last().copied() {
+            Some(index) => index,
+            None => panic!("sequence_end without a current sequence"),
         };
         assert!(matches!(
             self.nodes[index as usize - 1].data,
@@ -514,14 +518,14 @@ impl Document {
         event: Event,
         ctx: &mut Vec<i32>,
     ) -> Result<()> {
-        let EventData::MappingStart {
-            anchor,
-            mut tag,
-            style,
-            ..
-        } = event.data
-        else {
-            unreachable!()
+        let (anchor, mut tag, style) = match event.data {
+            EventData::MappingStart {
+                anchor,
+                tag,
+                style,
+                ..
+            } => (anchor, tag, style),
+            _ => unreachable!(),
         };
 
         let mut pairs = Vec::with_capacity(16);
@@ -547,8 +551,9 @@ impl Document {
     }
 
     fn load_mapping_end(&mut self, event: Event, ctx: &mut Vec<i32>) -> Result<()> {
-        let Some(index) = ctx.last().copied() else {
-            panic!("mapping_end without a current mapping")
+        let index = match ctx.last().copied() {
+            Some(index) => index,
+            None => panic!("mapping_end without a current mapping"),
         };
         assert!(matches!(
             self.nodes[index as usize - 1].data,
@@ -649,8 +654,9 @@ impl Document {
         let plain_implicit = node.tag.as_deref() == Some(DEFAULT_SCALAR_TAG);
         let quoted_implicit = node.tag.as_deref() == Some(DEFAULT_SCALAR_TAG); // TODO: Why compare twice?! (even the C code does this)
 
-        let NodeData::Scalar { value, style } = node.data else {
-            unreachable!()
+        let (value, style) = match node.data {
+            NodeData::Scalar { value, style } => (value, style),
+            _ => unreachable!(),
         };
         let event = Event::new(EventData::Scalar {
             anchor,
@@ -671,8 +677,9 @@ impl Document {
     ) -> Result<()> {
         let implicit = node.tag.as_deref() == Some(DEFAULT_SEQUENCE_TAG);
 
-        let NodeData::Sequence { items, style } = node.data else {
-            unreachable!()
+        let (items, style) = match node.data {
+            NodeData::Sequence { items, style } => (items, style),
+            _ => unreachable!(),
         };
         let event = Event::new(EventData::SequenceStart {
             anchor,
@@ -697,8 +704,9 @@ impl Document {
     ) -> Result<()> {
         let implicit = node.tag.as_deref() == Some(DEFAULT_MAPPING_TAG);
 
-        let NodeData::Mapping { pairs, style } = node.data else {
-            unreachable!()
+        let (pairs, style) = match node.data {
+            NodeData::Mapping { pairs, style } => (pairs, style),
+            _ => unreachable!(),
         };
         let event = Event::new(EventData::MappingStart {
             anchor,

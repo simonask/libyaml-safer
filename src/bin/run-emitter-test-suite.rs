@@ -116,8 +116,9 @@ fn get_tag(line: &str) -> Option<&str> {
 fn get_value<'a>(line: &str, buffer: &'a mut String, style: &mut ScalarStyle) -> &'a str {
     let mut remainder = line;
     let value = loop {
-        let Some((_before, tail)) = remainder.split_once(' ') else {
-            panic!("invalid line: {line}");
+        let (_before, tail) = match remainder.split_once(' ') {
+            Some(parts) => parts,
+            None => panic!("invalid line: {line}"),
         };
 
         *style = match tail.chars().next().expect("string should not be empty") {

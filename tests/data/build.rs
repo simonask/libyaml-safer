@@ -20,8 +20,9 @@ fn main() {
 
 fn download_and_unpack() -> Result<()> {
     let url = format!("https://github.com/yaml/yaml-test-suite/archive/refs/tags/{TAG}.tar.gz");
-    let response = reqwest::blocking::get(url)?.error_for_status()?;
-    let decoder = GzDecoder::new(response);
+    let response = minreq::get(&url).send()?;
+    let bytes = response.as_bytes();
+    let decoder = GzDecoder::new(bytes);
     let mut archive = Archive::new(decoder);
     let prefix = format!("yaml-test-suite-{}", TAG);
 

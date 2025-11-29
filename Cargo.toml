@@ -5,13 +5,14 @@ authors = ["Simon Ask Ulsnes <simon@ulsnes.dk"]
 categories = ["encoding", "parser-implementations"]
 description = "Safer libyaml port, based on unsafe-libyaml"
 documentation = "https://docs.rs/libyaml-safer"
-edition = "2024"
+edition = "2021"
 keywords = ["yaml"]
 license-file = "LICENSE-MIT"
 repository = "https://github.com/simonask/libyaml-safer"
-rust-version = "1.85"
+rust-version = "1.64"
 
 [dev-dependencies]
+# To test on 1.64,1.75,etc, comment out `criterion`.
 criterion = "0.5.1"
 pretty_assertions = "1.0"
 unsafe-libyaml = "0.2.10"

@@ -130,8 +130,9 @@ fn read_utf8_char_unbuffered(
     reader.read_exact(&mut buffer[..width])?;
     if let Ok(valid) = core::str::from_utf8(&buffer[..width]) {
         // We read a whole, valid character.
-        let Some(ch) = valid.chars().next() else {
-            unreachable!()
+        let ch = match valid.chars().next() {
+            Some(ch) => ch,
+            None => unreachable!(),
         };
         push_char(out, ch, *offset)?;
         *offset += width;
@@ -158,7 +159,10 @@ fn read_utf16_buffered<const BIG_ENDIAN: bool>(
     };
 
     let chunks = available.chunks_exact(2).map(|chunk| {
-        let [a, b] = chunk else { unreachable!() };
+        let (a, b) = match chunk {
+            [a, b] => (a, b),
+            _ => unreachable!(),
+        };
         if BIG_ENDIAN {
             u16::from_be_bytes([*a, *b])
         } else {

@@ -17,8 +17,9 @@ macro_rules! IS_ALPHA {
 }
 
 pub(crate) fn is_alpha(ch: impl Into<Option<char>>) -> bool {
-    let Some(ch) = ch.into() else {
-        return false;
+    let ch = match ch.into() {
+        Some(ch) => ch,
+        None => return false,
     };
     ch >= '0' && ch <= '9'
         || ch >= 'A' && ch <= 'Z'

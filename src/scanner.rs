@@ -161,8 +161,9 @@ impl<R: BufRead> Scanner<R> {
 
     /// Equivalent to the libyaml macro `READ_LINE`.
     fn read_line_break(&mut self, string: &mut String) {
-        let Some(front) = self.buffer.front().copied() else {
-            panic!("unexpected end of input");
+        let front = match self.buffer.front().copied() {
+            Some(front) => front,
+            None => panic!("unexpected end of input"),
         };
 
         if let ('\r', Some('\n')) = (front, self.buffer.get(1).copied()) {
