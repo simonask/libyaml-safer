@@ -14,13 +14,17 @@ proc-macro2 = "=1.0.60"
 quote = "=1.0.28"
 
 [build-dependencies]
+# Pins are for Rust 1.64.0 compatibility
 anyhow = "1.0"
 flate2 = "=1.0.26"
 minreq = { version = "=2.6.0", features = ["https-native"] }
 native-tls = "=0.2.11"
 once_cell = "=1.18.0"
-# Pin OpenSSL versions for Rust 1.64.0 compatibility on Linux
 openssl = "=0.10.64"
 openssl-sys = "=0.9.101"
+log = "=0.4.20"
+regex = "=1.9.6"
+regex-syntax = "=0.7.5"
+regex-automata = "=0.3.9"
 security-framework-sys = "=2.9.1"
 tar = "0.4.16"
